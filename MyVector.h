@@ -2,6 +2,7 @@
 
 #include <initializer_list>
 #include <cstddef>
+#include <stdexcept>
 
 
 template<typename T>
@@ -9,20 +10,27 @@ class MyVector {
     T* data;            // 동적 배열을 가리키는 포인터
     size_t cap;         // 현재 할당된 배열 크기
     size_t length;      // 실제 저장된 요소 개수    
+
+    void ensure_capacity(size_t min_capacity);
 public:
 
-    MyVector(std::initializer_list<T> init) {
-        length = init.size();
-        cap = length;
-        data = new T[cap];
-        size_t i = 0;
-        for (const auto& val : init) {
-            data[i++] = val;
+    MyVector(std::initializer_list<T> init): data(nullptr), cap(init.size()), length(init.size()) {
+        if (cap != 0) {
+            data = new T[cap];
+            size_t i = 0;
+            for (const auto& val : init) {
+                data[i++] = val;
+            }
         }
     }
 
     MyVector(): data(nullptr), length(0), cap(0) {}
     ~MyVector() { delete[] data; }
+
+    MyVector(const MyVector& other);
+    MyVector(MyVector&& other) noexcept;
+    MyVector& operator=(const MyVector& other);
+    MyVector& operator=(MyVector&& other) noexcept;
 
     void push_back(const T& val);   // Vector 마지막에 항목을 추가하는 함수 구현, 필요시 벡터 크기 증가
     void pop_back();                // Vector의 마지막 항목을 제거하는 함수 구현
@@ -90,3 +98,7 @@ public:
     bool empty() const ;    // 현재 vector가 empty인지 확인하는 함수 구현
 
 };
+
+#define MYVECTOR_IMPLEMENTATION
+#include "MyVector.cpp"
+#undef MYVECTOR_IMPLEMENTATION
